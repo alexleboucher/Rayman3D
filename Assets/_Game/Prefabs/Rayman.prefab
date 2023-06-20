@@ -1795,11 +1795,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eae7ef9504a3b2f46a2c573c801b48dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 4046305815770434438}
-  cameraTransform: {fileID: 0}
-  speed: 6
+  walkSpeed: 5
+  runSpeed: 12
+  jumpHeight: 2
   turnSmoothTime: 0.1
-  gravity: -9.81
+  smoothSpeedTime: 17
 --- !u!4 &4944722967690625318 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8347512471703596606, guid: 8f7b781816471234a89e44236aa9ddb5,
