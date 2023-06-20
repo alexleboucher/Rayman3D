@@ -8,7 +8,7 @@ public class ThirdPersonMovement : MonoBehaviour
     [SerializeField] float runSpeed = 15f;
     [SerializeField] float jumpHeight = 6f;
     [SerializeField] float turnSmoothTime = 0.1f;
-    [SerializeField] float smoothSpeedTime = 0.1f;
+    [SerializeField] float accelerationDecelerationSpeed = 0.1f;
 
     Transform cameraTransform;
     Animator animator;
@@ -52,9 +52,6 @@ public class ThirdPersonMovement : MonoBehaviour
 
         if (direction.magnitude >= 0.1f)
         {
-            bool isRunning = Input.GetKey(KeyCode.LeftShift);
-            float targetSpeed = isRunning ? runSpeed : walkSpeed;
-
             // Get the angle between the current rotation and the direction
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cameraTransform.eulerAngles.y;
 
@@ -62,43 +59,48 @@ public class ThirdPersonMovement : MonoBehaviour
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0, angle, 0);
 
-            currentSpeed = CalculateNewCurrentSpeed(targetSpeed);
-            moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward * currentSpeed;
-
             if (controller.isGrounded)
             {
+                bool isRunning = Input.GetKey(KeyCode.LeftShift);
+                float targetSpeed = isRunning ? runSpeed : walkSpeed;
+
+                currentSpeed = CalculateNewCurrentSpeed(targetSpeed, accelerationDecelerationSpeed);
+                moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward * currentSpeed;
+
                 animator.SetBool("IsWalking", !isRunning);
                 animator.SetBool("IsRunning", isRunning);
-            }
-            else
+            } else
             {
+                // Divide by 5 because it tkaes more times to decelerate in air
+                currentSpeed = CalculateNewCurrentSpeed(0, accelerationDecelerationSpeed / 5);
+                moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward * currentSpeed;
+
                 animator.SetBool("IsWalking", false);
                 animator.SetBool("IsRunning", false);
             }
         }
         else
         {
-            currentSpeed = CalculateNewCurrentSpeed(0);
+            currentSpeed = CalculateNewCurrentSpeed(0, accelerationDecelerationSpeed);
             moveDirection = transform.forward * currentSpeed;
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsRunning", false);
         }
-        print(currentSpeed);
 
         return moveDirection;
     }
 
-    private float CalculateNewCurrentSpeed(float targetSpeed)
+    private float CalculateNewCurrentSpeed(float targetSpeed, float smoothTime)
     {
         float newCurrentSpeed;
         if (currentSpeed < targetSpeed)
         {
-            newCurrentSpeed = currentSpeed + smoothSpeedTime * Time.deltaTime;
+            newCurrentSpeed = currentSpeed + smoothTime * Time.deltaTime;
             if (newCurrentSpeed > targetSpeed)
                 newCurrentSpeed = targetSpeed;
         } else if (currentSpeed > targetSpeed)
         {
-            newCurrentSpeed = currentSpeed - smoothSpeedTime * Time.deltaTime;
+            newCurrentSpeed = currentSpeed - smoothTime * Time.deltaTime;
             if (newCurrentSpeed < targetSpeed)
                 newCurrentSpeed = targetSpeed;
         } else
