@@ -19,6 +19,9 @@ public class ThirdPersonMovement : MonoBehaviour
     Vector3 velocity; 
     float turnSmoothVelocity;
     float currentSpeed = 0;
+    bool isJumping = false;
+    bool isFloating = false;
+    bool lastIsGrounded = true;
 
     Vector3 moveDirection;
 
@@ -31,26 +34,47 @@ public class ThirdPersonMovement : MonoBehaviour
     }
 
     void Update()
-    {
+    { 
         bool isGrounded = groundChecker.IsGrounded(out RaycastHit? hitInfo) || controller.isGrounded;
         moveDirection = GetMoveDirection(isGrounded);
         if (isGrounded)
         {
+            if (isFloating && !lastIsGrounded)
+            {
+                animator.SetBool("IsFloating", false);
+                isFloating = false;
+            }
+            if (isJumping && !lastIsGrounded)
+            {
+                animator.SetBool("IsJumping", false);
+                isJumping = false;
+            }
             moveDirection = AdjustVelocityToSlope(moveDirection, hitInfo.Value);
 
             if (Input.GetButtonDown("Jump"))
             {
                 animator.SetTrigger(moveDirection.magnitude > 1 ? "RunJump" : "Jump");
+                animator.SetBool("IsJumping", true);
+                isJumping = true;
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
             }
             else if (velocity.y < 0)
                 velocity.y = -2f;
+        } else
+        {
+            if (!isJumping && !isFloating)
+            {
+                animator.SetBool("IsFloating", true);
+                animator.SetTrigger("Float");
+                isFloating = true;
+            }
         }
 
         velocity.y += Physics.gravity.y * Time.deltaTime;
 
         moveDirection.y += velocity.y;
         controller.Move(moveDirection * Time.deltaTime);
+        lastIsGrounded = isGrounded;
         //print(new Vector3(controller.velocity.x, 0, controller.velocity.z).magnitude);
     }
 
@@ -115,7 +139,7 @@ public class ThirdPersonMovement : MonoBehaviour
         return velocity;
     }
 
-    private float CalculateNewCurrentSpeed(float targetSpeed, float smoothTime)
+    float CalculateNewCurrentSpeed(float targetSpeed, float smoothTime)
     {
         float newCurrentSpeed;
         if (currentSpeed < targetSpeed)
@@ -134,5 +158,11 @@ public class ThirdPersonMovement : MonoBehaviour
         }
 
         return newCurrentSpeed;
+    }
+
+    public void EndJump()
+    {
+        isJumping = false;
+        animator.SetBool("IsJumping", false);
     }
 }
