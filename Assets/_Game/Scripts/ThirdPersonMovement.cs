@@ -39,7 +39,10 @@ public class ThirdPersonMovement : MonoBehaviour
             moveDirection = AdjustVelocityToSlope(moveDirection, hitInfo.Value);
 
             if (Input.GetButtonDown("Jump"))
+            {
+                animator.SetTrigger(moveDirection.magnitude > 1 ? "RunJump" : "Jump");
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
+            }
             else if (velocity.y < 0)
                 velocity.y = -2f;
         }
@@ -81,7 +84,7 @@ public class ThirdPersonMovement : MonoBehaviour
             } else
             {
                 // Divide the deceleration speed because it tkaes more times to decelerate in air
-                currentSpeed = CalculateNewCurrentSpeed(0, decelerationSpeed / 4);
+                currentSpeed = CalculateNewCurrentSpeed(0, decelerationSpeed / 7);
                 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward * currentSpeed;
 
                 animator.SetBool("IsWalking", false);
