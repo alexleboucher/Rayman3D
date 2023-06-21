@@ -71,17 +71,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 8f7b781816471234a89e44236aa9ddb5,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 6.719
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8f7b781816471234a89e44236aa9ddb5,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.06
+      value: 7.1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8f7b781816471234a89e44236aa9ddb5,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.4
+      value: -23.03
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8f7b781816471234a89e44236aa9ddb5,
         type: 3}
@@ -1187,6 +1187,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6929300483407842110}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f7b781816471234a89e44236aa9ddb5,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1346583561026539223}
   m_SourcePrefab: {fileID: 100100000, guid: 8f7b781816471234a89e44236aa9ddb5, type: 3}
 --- !u!4 &620041444170168782 stripped
 Transform:
@@ -1279,7 +1283,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 6.970693, z: 1.09674}
+  m_Center: {x: 0, y: 7, z: 0.29}
 --- !u!114 &2294068259595003473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1757,7 +1761,7 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 128
     maxStep: 0.5
-    heightOffset: 0.1
+    heightOffset: 0.08
     footSpeed: 2.5
     footRadius: 0.15
     footCenterOffset: 0
@@ -1796,10 +1800,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed: 5
-  runSpeed: 12
+  runSpeed: 13
   jumpHeight: 2
   turnSmoothTime: 0.1
-  smoothSpeedTime: 17
+  accelerationSpeed: 15
+  decelerationSpeed: 22
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+--- !u!114 &1346583561026539223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4934233410505911733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 891a0730b0a1726409db31e8b886fead, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  origin: {fileID: 5706689135056647951}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  groundDistanceSafeValue: 0.3
 --- !u!4 &4944722967690625318 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8347512471703596606, guid: 8f7b781816471234a89e44236aa9ddb5,

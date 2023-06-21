@@ -8,8 +8,11 @@ public class ThirdPersonMovement : MonoBehaviour
     [SerializeField] float runSpeed = 15f;
     [SerializeField] float jumpHeight = 6f;
     [SerializeField] float turnSmoothTime = 0.1f;
-    [SerializeField] float accelerationDecelerationSpeed = 0.1f;
+    [SerializeField] float accelerationSpeed = 15f;
+    [SerializeField] float decelerationSpeed = 22f;
+    [SerializeField] LayerMask groundLayer;
 
+    GroundChecker groundChecker;
     Transform cameraTransform;
     Animator animator;
     CharacterController controller;
@@ -17,8 +20,11 @@ public class ThirdPersonMovement : MonoBehaviour
     float turnSmoothVelocity;
     float currentSpeed = 0;
 
+    Vector3 moveDirection;
+
     private void Awake()
     {
+        groundChecker = GetComponent<GroundChecker>();
         cameraTransform = Camera.main.transform;
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
@@ -26,10 +32,12 @@ public class ThirdPersonMovement : MonoBehaviour
 
     void Update()
     {
-        Vector3 moveDirection = GetMoveDirection();
-
-        if (controller.isGrounded)
+        bool isGrounded = groundChecker.IsGrounded(out RaycastHit? hitInfo) || controller.isGrounded;
+        moveDirection = GetMoveDirection(isGrounded);
+        if (isGrounded)
         {
+            moveDirection = AdjustVelocityToSlope(moveDirection, hitInfo.Value);
+
             if (Input.GetButtonDown("Jump"))
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
             else if (velocity.y < 0)
@@ -38,11 +46,12 @@ public class ThirdPersonMovement : MonoBehaviour
 
         velocity.y += Physics.gravity.y * Time.deltaTime;
 
-        controller.Move((velocity + moveDirection) * Time.deltaTime);
+        moveDirection.y += velocity.y;
+        controller.Move(moveDirection * Time.deltaTime);
         //print(new Vector3(controller.velocity.x, 0, controller.velocity.z).magnitude);
     }
 
-    Vector3 GetMoveDirection()
+    Vector3 GetMoveDirection(bool isGrounded)
     {
         Vector3 moveDirection;
 
@@ -59,20 +68,20 @@ public class ThirdPersonMovement : MonoBehaviour
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0, angle, 0);
 
-            if (controller.isGrounded)
+            if (isGrounded)
             {
                 bool isRunning = Input.GetKey(KeyCode.LeftShift);
                 float targetSpeed = isRunning ? runSpeed : walkSpeed;
 
-                currentSpeed = CalculateNewCurrentSpeed(targetSpeed, accelerationDecelerationSpeed);
+                currentSpeed = CalculateNewCurrentSpeed(targetSpeed, accelerationSpeed);
                 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward * currentSpeed;
 
                 animator.SetBool("IsWalking", !isRunning);
                 animator.SetBool("IsRunning", isRunning);
             } else
             {
-                // Divide by 5 because it tkaes more times to decelerate in air
-                currentSpeed = CalculateNewCurrentSpeed(0, accelerationDecelerationSpeed / 5);
+                // Divide the deceleration speed because it tkaes more times to decelerate in air
+                currentSpeed = CalculateNewCurrentSpeed(0, decelerationSpeed / 4);
                 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward * currentSpeed;
 
                 animator.SetBool("IsWalking", false);
@@ -81,13 +90,26 @@ public class ThirdPersonMovement : MonoBehaviour
         }
         else
         {
-            currentSpeed = CalculateNewCurrentSpeed(0, accelerationDecelerationSpeed);
+            currentSpeed = CalculateNewCurrentSpeed(0, decelerationSpeed);
             moveDirection = transform.forward * currentSpeed;
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsRunning", false);
         }
 
         return moveDirection;
+    }
+
+    Vector3 AdjustVelocityToSlope(Vector3 velocity, RaycastHit hitInfo)
+    {
+        Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hitInfo.normal);
+        Vector3 adjustedVelocity = slopeRotation * velocity;
+
+        if (adjustedVelocity.y < 0)
+        {
+            return adjustedVelocity;
+        }
+
+        return velocity;
     }
 
     private float CalculateNewCurrentSpeed(float targetSpeed, float smoothTime)
